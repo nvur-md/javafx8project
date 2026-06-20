@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="unischool.controllers.EnseignantController"
+            stylesheets="@../css/style.css"
+            prefHeight="750.0" prefWidth="1200.0">
+
+    <!-- TOP : Barre de titre -->
+    <top>
+        <VBox style="-fx-background-color: #2c3e50; -fx-padding: 15 20;">
+            <HBox alignment="CENTER_LEFT" spacing="20.0">
+                <Label text="📖 UniSchool - Enseignant" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="userLabel" text="👤 Enseignant" style="-fx-text-fill: #ecf0f1; -fx-font-size: 14px;"/>
+                <Button text="🔄 Rafraîchir" onAction="#handleRefresh" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5px; -fx-padding: 8 15;"/>
+                <Button text="🔓 Déconnexion" onAction="#handleLogout" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5px; -fx-padding: 8 15;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- CENTER : TabPane -->
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 10;">
+
+            <!-- ONGLET 1 : MES COURS -->
+            <Tab text="📚 Mes Cours" closable="false">
+                <VBox spacing="15" style="-fx-padding: 20;">
+                    <Label text="📚 Mes Cours" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+                    <HBox spacing="15">
+                        <VBox spacing="10" prefWidth="300">
+                            <Label text="📋 Mes matières" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                            <ListView fx:id="matieresEnseignees" prefHeight="300"/>
+                        </VBox>
+
+                        <VBox spacing="10" HBox.hgrow="ALWAYS">
+                            <Label text="👥 Étudiants" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                            <TableView fx:id="etudiantsCoursTable" prefHeight="300">
+                                <columns>
+                                    <TableColumn fx:id="ecIdCol" text="ID" prefWidth="50"/>
+                                    <TableColumn fx:id="ecNomCol" text="Nom" prefWidth="130"/>
+                                    <TableColumn fx:id="ecPrenomCol" text="Prénom" prefWidth="130"/>
+                                    <TableColumn fx:id="ecEmailCol" text="Email" prefWidth="180"/>
+                                    <TableColumn fx:id="ecNoteCol" text="Note" prefWidth="80"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </HBox>
+
+                    <Label fx:id="coursDetailsLabel" text="💡 Sélectionnez une matière pour voir les étudiants" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-padding: 5px;"/>
+                </VBox>
+            </Tab>
+
+            <!-- ONGLET 2 : GESTION DES NOTES -->
+            <Tab text="📝 Gestion des Notes" closable="false">
+                <VBox spacing="15" style="-fx-padding: 20;">
+                    <Label text="📝 Gestion des Notes" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+                    <HBox spacing="10">
+                        <ComboBox fx:id="matiereNoteCombo" promptText="Toutes les matières" prefWidth="200"/>
+                        <ComboBox fx:id="etudiantNoteCombo" promptText="Tous les étudiants" prefWidth="200"/>
+                        <Button text="🔍 Filtrer" onAction="#handleFiltrerNotesEnseignant" styleClass="button-info"/>
+                        <Button text="🔄 Tout afficher" onAction="#handleAfficherToutesNotesEnseignant" styleClass="button-secondary"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="➕ Ajouter une note" onAction="#handleAjouterNoteEnseignant" styleClass="button-success"/>
+                        <Button text="📥 Export CSV" onAction="#handleExporterNotesCSVEnseignant" styleClass="button-primary"/>
+                    </HBox>
+
+                    <TableView fx:id="notesEnseignantTable" prefHeight="400">
+                        <columns>
+                            <TableColumn fx:id="neIdCol" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="neEtudiantCol" text="Étudiant" prefWidth="150"/>
+                            <TableColumn fx:id="neMatiereCol" text="Matière" prefWidth="150"/>
+                            <TableColumn fx:id="neValeurCol" text="Note" prefWidth="80"/>
+                            <TableColumn fx:id="neCoeffCol" text="Coeff" prefWidth="60"/>
+                            <TableColumn fx:id="nePointsCol" text="Points" prefWidth="80"/>
+                            <TableColumn fx:id="neTypeCol" text="Type" prefWidth="100"/>
+                            <TableColumn fx:id="neDateCol" text="Date" prefWidth="100"/>
+                            <TableColumn fx:id="neAppreciationCol" text="Appréciation" prefWidth="150"/>
+                            <TableColumn fx:id="neValideeCol" text="Validée" prefWidth="80"/>
+                        </columns>
+                    </TableView>
+
+                    <HBox spacing="10">
+                        <Button text="✏️ Modifier" onAction="#handleModifierNoteEnseignant" styleClass="button-warning"/>
+                        <Button text="🗑️ Supprimer" onAction="#handleSupprimerNoteEnseignant" styleClass="button-danger"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="notesStatusLabel" text="💡 Sélectionnez une note pour la modifier ou la supprimer" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
+                    </HBox>
+                </VBox>
+            </Tab>
+
+            <!-- ONGLET 3 : STATISTIQUES -->
+            <Tab text="📊 Statistiques" closable="false">
+                <VBox spacing="15" style="-fx-padding: 20;">
+                    <Label text="📊 Mes Statistiques" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+                    <HBox spacing="10">
+                        <ComboBox fx:id="statMatiereCombo" promptText="Sélectionner une matière..." prefWidth="200"/>
+                        <Button text="📊 Afficher" onAction="#handleAfficherStatistiques" styleClass="button-primary"/>
+                    </HBox>
+
+                    <GridPane hgap="15" vgap="15">
+                        <VBox style="-fx-background-color: #3498db; -fx-padding: 20; -fx-background-radius: 10;" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <Label text="📊" style="-fx-font-size: 30px;"/>
+                            <Label fx:id="ensMoyenneClasse" text="0.00" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                            <Label text="Moyenne de la classe" style="-fx-font-size: 14px; -fx-text-fill: #ecf0f1;"/>
+                        </VBox>
+                        <VBox style="-fx-background-color: #27ae60; -fx-padding: 20; -fx-background-radius: 10;" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <Label text="✅" style="-fx-font-size: 30px;"/>
+                            <Label fx:id="ensTauxReussite" text="0%" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                            <Label text="Taux de réussite" style="-fx-font-size: 14px; -fx-text-fill: #ecf0f1;"/>
+                        </VBox>
+                        <VBox style="-fx-background-color: #e67e22; -fx-padding: 20; -fx-background-radius: 10;" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                            <Label text="👥" style="-fx-font-size: 30px;"/>
+                            <Label fx:id="ensNbEtudiants" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                            <Label text="Nombre d'étudiants" style="-fx-font-size: 14px; -fx-text-fill: #ecf0f1;"/>
+                        </VBox>
+                        <VBox style="-fx-background-color: #9b59b6; -fx-padding: 20; -fx-background-radius: 10;" GridPane.columnIndex="3" GridPane.rowIndex="0">
+                            <Label text="📝" style="-fx-font-size: 30px;"/>
+                            <Label fx:id="ensNbNotes" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                            <Label text="Nombre de notes" style="-fx-font-size: 14px; -fx-text-fill: #ecf0f1;"/>
+                        </VBox>
+                    </GridPane>
+
+                    <VBox fx:id="ensGraphiqueContainer" prefHeight="250" visible="false"/>
+
+                    <Label text="📋 Liste des étudiants" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <ListView fx:id="ensStatListeEtudiants" prefHeight="120"/>
+                </VBox>
+            </Tab>
+
+            <!-- ONGLET 4 : COMMUNICATION -->
+            <Tab text="✉️ Communication" closable="false">
+                <VBox spacing="15" style="-fx-padding: 20;">
+                    <Label text="✉️ Communication" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+                    <HBox spacing="15">
+                        <Label text="📋 Destinataire :" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                        <ComboBox fx:id="ensDestinataireCombo" prefWidth="200" promptText="Sélectionner un destinataire"/>
+                    </HBox>
+
+                    <Label text="📝 Objet :" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="ensMessageObjetField" promptText="Saisissez l'objet du message..."/>
+
+                    <Label text="📝 Message :" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <TextArea fx:id="ensMessageContentArea" promptText="Saisissez votre message ici..." prefHeight="120"/>
+
+                    <Button text="📤 Envoyer" onAction="#handleEnseignantEnvoyerMessage" styleClass="button-primary"/>
+
+                    <Separator/>
+
+                    <Label text="📋 Messages envoyés" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <TableView fx:id="ensMessagesTable" prefHeight="150">
+                        <columns>
+                            <TableColumn fx:id="ensMsgDateCol" text="Date" prefWidth="150"/>
+                            <TableColumn fx:id="ensMsgExpediteurCol" text="Expéditeur" prefWidth="150"/>
+                            <TableColumn fx:id="ensMsgDestinataireCol" text="Destinataire" prefWidth="200"/>
+                            <TableColumn fx:id="ensMsgObjetCol" text="Objet" prefWidth="200"/>
+                            <TableColumn fx:id="ensMsgContenuCol" text="Message" prefWidth="300"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+
+    <!-- BOTTOM : Barre de statut -->
+    <bottom>
+        <HBox style="-fx-background-color: #ecf0f1; -fx-padding: 8 20;">
+            <Label text="✅ Prêt" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="statusLabel" text="Connecté en tant qu'Enseignant" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

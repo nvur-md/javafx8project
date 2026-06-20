@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="unischool.controllers.LoginController"
+      spacing="20.0"
+      alignment="CENTER"
+      style="-fx-background-color: #f5f6fa; -fx-padding: 50px;">
+
+    <!-- Titre -->
+    <Label text="🎓 UniSchool" style="-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+    <Label text="Système de Gestion Scolaire" style="-fx-font-size: 18px; -fx-text-fill: #7f8c8d;"/>
+
+    <!-- Séparateur -->
+    <Separator prefWidth="400.0"/>
+
+    <!-- Formulaire -->
+    <VBox spacing="15.0" maxWidth="400.0" style="-fx-background-color: white; -fx-padding: 30px; -fx-border-radius: 10px; -fx-background-radius: 10px;">
+
+        <Label text="Connexion" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+        <!-- Champ Email -->
+        <Label text="📧 Email" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <TextField fx:id="emailField" promptText="exemple@email.com"
+                   style="-fx-background-radius: 8px; -fx-border-radius: 8px; -fx-border-color: #dcdde1; -fx-padding: 12px; -fx-font-size: 14px;"/>
+
+        <!-- Champ Mot de passe -->
+        <Label text="🔒 Mot de Passe" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <PasswordField fx:id="passwordField" promptText="••••••••"
+                       style="-fx-background-radius: 8px; -fx-border-radius: 8px; -fx-border-color: #dcdde1; -fx-padding: 12px; -fx-font-size: 14px;"/>
+
+        <!-- Options -->
+        <HBox spacing="100.0">
+            <CheckBox fx:id="rememberMeCheck" text="Se souvenir de moi" style="-fx-font-size: 13px;"/>
+            <Hyperlink text="Mot de passe oublié ?" style="-fx-font-size: 13px; -fx-text-fill: #3498db;"/>
+        </HBox>
+
+        <!-- Bouton de connexion -->
+        <Button fx:id="loginButton" text="SE CONNECTER"
+                onAction="#handleLogin"
+                prefWidth="Infinity" prefHeight="45.0"
+                style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 8px; -fx-cursor: hand;"/>
+
+        <!-- Message d'erreur -->
+        <Label fx:id="messageLabel" text="" style="-fx-text-fill: #e74c3c; -fx-font-size: 13px;" visible="false"/>
+
+        <!-- Barre de progression -->
+        <ProgressBar fx:id="loadingProgress" visible="false" prefWidth="Infinity"
+                     style="-fx-accent: #3498db; -fx-background-radius: 10px;"/>
+
+        <!-- Informations de test -->
+        <VBox spacing="5.0" style="-fx-padding: 15px 0 0 0; -fx-alignment: center;">
+            <Label text="📋 Comptes de test" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #7f8c8d;"/>
+            <Label text="Admin: admin@unischool.com / admin123" style="-fx-font-size: 10px; -fx-text-fill: #95a5a6;"/>
+            <Label text="Enseignant: prof.math@unischool.com / enseignant123" style="-fx-font-size: 10px; -fx-text-fill: #95a5a6;"/>
+            <Label text="Étudiant: ali.ahmed@uni.com / etudiant123" style="-fx-font-size: 10px; -fx-text-fill: #95a5a6;"/>
+        </VBox>
+    </VBox>
+</VBox>

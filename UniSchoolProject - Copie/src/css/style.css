@@ -1,0 +1,318 @@
+/* ============================================================
+   STYLE CSS - UNISCHOOL
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   STYLES GÉNÉRAUX
+   ------------------------------------------------------------ */
+
+.root {
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+    -fx-background-color: #f5f6fa;
+}
+
+/* ------------------------------------------------------------
+   PAGE DE CONNEXION
+   ------------------------------------------------------------ */
+
+/* Bouton de connexion */
+#loginButton {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 30px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, #3498db40, 10, 0, 0, 4);
+}
+
+#loginButton:hover {
+    -fx-background-color: #2980b9;
+    -fx-effect: dropshadow(gaussian, #3498db60, 15, 0, 0, 6);
+}
+
+#loginButton:pressed {
+    -fx-background-color: #1a5276;
+}
+
+#loginButton:disabled {
+    -fx-opacity: 0.6;
+    -fx-cursor: default;
+}
+
+/* Champs de texte */
+.text-field, .password-field {
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-border-color: #dcdde1;
+    -fx-border-width: 1px;
+    -fx-padding: 12px 15px;
+    -fx-font-size: 14px;
+    -fx-background-color: white;
+    -fx-prompt-text-fill: #bdc3c7;
+}
+
+.text-field:focused, .password-field:focused {
+    -fx-border-color: #3498db;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, #3498db40, 10, 0, 0, 0);
+}
+
+/* CheckBox */
+.check-box {
+    -fx-font-size: 13px;
+    -fx-text-fill: #2c3e50;
+}
+
+.check-box .box {
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-border-color: #bdc3c7;
+}
+
+.check-box:selected .box {
+    -fx-background-color: #3498db;
+    -fx-border-color: #3498db;
+}
+
+/* Hyperlink */
+.hyperlink {
+    -fx-text-fill: #3498db;
+    -fx-font-size: 13px;
+    -fx-border-color: transparent;
+}
+
+.hyperlink:hover {
+    -fx-text-fill: #2980b9;
+    -fx-underline: true;
+}
+
+/* ProgressBar */
+.progress-bar {
+    -fx-accent: #3498db;
+    -fx-background-radius: 10px;
+    -fx-padding: 2px;
+}
+
+.progress-bar .track {
+    -fx-background-color: #ecf0f1;
+    -fx-background-radius: 10px;
+}
+
+.progress-bar .bar {
+    -fx-background-radius: 10px;
+}
+
+/* ------------------------------------------------------------
+   TABLEAU DE BORD (utilisé dans les autres interfaces)
+   ------------------------------------------------------------ */
+
+/* Styles pour les tables */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #ecf0f1;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.table-view .column-header {
+    -fx-background-color: #2c3e50;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: white;
+}
+
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-font-size: 13px;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f8f9fa;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.table-row-cell:selected .text {
+    -fx-fill: white;
+}
+
+/* Styles pour les boutons */
+.button-primary {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button-primary:hover {
+    -fx-background-color: #2980b9;
+}
+
+.button-success {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button-success:hover {
+    -fx-background-color: #229954;
+}
+
+.button-danger {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button-danger:hover {
+    -fx-background-color: #c0392b;
+}
+
+.button-warning {
+    -fx-background-color: #f39c12;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button-warning:hover {
+    -fx-background-color: #e67e22;
+}
+
+.button-secondary {
+    -fx-background-color: #95a5a6;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button-secondary:hover {
+    -fx-background-color: #7f8c8d;
+}
+
+/* Styles pour les labels */
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.page-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.stat-value {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3498db;
+}
+
+.stat-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* Styles pour les tabs */
+.tab-pane {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab-header-area {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #ecf0f1;
+    -fx-background-radius: 8px 8px 0 0;
+    -fx-padding: 10px 20px;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #3498db;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-text-fill: #2c3e50;
+}
+
+/* Styles pour les accordéons */
+.titled-pane {
+    -fx-text-fill: #2c3e50;
+}
+
+.titled-pane > .title {
+    -fx-background-color: #ecf0f1;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px 15px;
+}
+
+.titled-pane > .title .text {
+    -fx-font-weight: bold;
+}
+
+/* Styles pour les tooltips */
+.tooltip {
+    -fx-background-color: #2c3e50;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 12px;
+}
+
+/* Styles pour les dialogues */
+.dialog-pane {
+    -fx-background-color: white;
+    -fx-border-color: #ecf0f1;
+    -fx-border-radius: 10px;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #2c3e50;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+/* Barre de statut */
+.status-bar {
+    -fx-background-color: #2c3e50;
+    -fx-padding: 8px 15px;
+}
+
+.status-bar .label {
+    -fx-text-fill: #ecf0f1;
+}
