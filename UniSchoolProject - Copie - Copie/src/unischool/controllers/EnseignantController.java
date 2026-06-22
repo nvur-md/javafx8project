@@ -50,15 +50,34 @@ public class EnseignantController implements Initializable {
     private UtilisateurDAO utilisateurDAO;
     private AbsenceDAO absenceDAO;
     private MessageDAO messageDAO;
+    private EmploiDuTempsDAO emploiDuTempsDAO;
 
     // ============================================================
-    // COMPOSANTS FXML
+    // COMPOSANTS FXML - ONGLET EMPLOI DU TEMPS
+    // ============================================================
+    @FXML private ComboBox<String> ensEdtSemestreCombo;
+    @FXML private Label ensTotalCoursLabel;
+    @FXML private Label ensEdtStatusLabel;
+    @FXML private TableView<EmploiDuTemps> ensEmploiDuTempsTable;
+    @FXML private TableColumn<EmploiDuTemps, String> ensEdtJourCol;
+    @FXML private TableColumn<EmploiDuTemps, String> ensEdtHoraireCol;
+    @FXML private TableColumn<EmploiDuTemps, String> ensEdtMatiereCol;
+    @FXML private TableColumn<EmploiDuTemps, String> ensEdtFiliereCol;
+    @FXML private TableColumn<EmploiDuTemps, Integer> ensEdtAnneeCol;
+    @FXML private TableColumn<EmploiDuTemps, String> ensEdtSalleCol;
+    @FXML private TableColumn<EmploiDuTemps, String> ensEdtTypeCol;
+
+    // ============================================================
+    // OBSERVABLE LIST - EMPLOI DU TEMPS
+    // ============================================================
+    private ObservableList<EmploiDuTemps> ensEmploiDuTempsData = FXCollections.observableArrayList();
+
+    // ============================================================
+    // COMPOSANTS FXML - ONGLET MES COURS
     // ============================================================
     @FXML private Label userLabel;
     @FXML private Label statusLabel;
     @FXML private Label coursDetailsLabel;
-
-    // Mes Cours
     @FXML private ListView<String> matieresEnseignees;
     @FXML private TableView<Etudiant> etudiantsCoursTable;
     @FXML private TableColumn<Etudiant, Integer> ecIdCol;
@@ -67,7 +86,9 @@ public class EnseignantController implements Initializable {
     @FXML private TableColumn<Etudiant, String> ecEmailCol;
     @FXML private TableColumn<Etudiant, Double> ecNoteCol;
 
-    // Gestion des Notes
+    // ============================================================
+    // COMPOSANTS FXML - ONGLET GESTION DES NOTES
+    // ============================================================
     @FXML private ComboBox<String> matiereNoteCombo;
     @FXML private ComboBox<String> etudiantNoteCombo;
     @FXML private Label notesStatusLabel;
@@ -83,7 +104,9 @@ public class EnseignantController implements Initializable {
     @FXML private TableColumn<Note, String> neAppreciationCol;
     @FXML private TableColumn<Note, Boolean> neValideeCol;
 
-    // Statistiques
+    // ============================================================
+    // COMPOSANTS FXML - ONGLET STATISTIQUES
+    // ============================================================
     @FXML private ComboBox<String> statMatiereCombo;
     @FXML private Label ensMoyenneClasse;
     @FXML private Label ensTauxReussite;
@@ -92,8 +115,14 @@ public class EnseignantController implements Initializable {
     @FXML private VBox ensGraphiqueContainer;
     @FXML private ListView<String> ensStatListeEtudiants;
 
-    // Communication
-    @FXML private ComboBox<String> ensDestinataireCombo;
+    // ============================================================
+// COMPOSANTS FXML - ONGLET COMMUNICATION
+// ============================================================
+    @FXML private ComboBox<String> ensDestinataireTypeCombo;
+    @FXML private ComboBox<String> ensDestinataireNomCombo;
+    @FXML private ComboBox<String> ensDestinataireFiliereCombo;
+    @FXML private Label ensDestinataireAffiche;
+    @FXML private Label ensMessagesEnvoyesLabel;
     @FXML private TextField ensMessageObjetField;
     @FXML private TextArea ensMessageContentArea;
     @FXML private TableView<Message> ensMessagesTable;
@@ -126,6 +155,7 @@ public class EnseignantController implements Initializable {
         chargerNotesEnseignant();
         chargerMessages();
         chargerComboboxFiltres();
+        rechargerComboboxNotes();
 
         System.out.println("✅ Enseignant connecté : " + enseignantNom);
     }
@@ -143,21 +173,28 @@ public class EnseignantController implements Initializable {
         utilisateurDAO = new UtilisateurDAO();
         absenceDAO = new AbsenceDAO();
         messageDAO = new MessageDAO();
+        emploiDuTempsDAO = new EmploiDuTempsDAO();
 
         // Configurer les colonnes
         setupEtudiantsCoursTableColumns();
         setupNotesEnseignantTableColumns();
         setupMessagesTableColumns();
+        setupEnsEmploiDuTempsTableColumns();
+
+        // Charger les données des ComboBox
+        chargerComboboxFiltres();
 
         // Écouteur sélection matière
-        matieresEnseignees.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldVal, newVal) -> {
-                    if (newVal != null) {
-                        chargerEtudiantsParMatiere(newVal);
-                        coursDetailsLabel.setText("📚 Matière sélectionnée : " + newVal);
+        if (matieresEnseignees != null) {
+            matieresEnseignees.getSelectionModel().selectedItemProperty().addListener(
+                    (obs, oldVal, newVal) -> {
+                        if (newVal != null) {
+                            chargerEtudiantsParMatiere(newVal);
+                            coursDetailsLabel.setText("📚 Matière sélectionnée : " + newVal);
+                        }
                     }
-                }
-        );
+            );
+        }
 
         System.out.println("✅ Interface Enseignant initialisée");
     }
@@ -180,9 +217,10 @@ public class EnseignantController implements Initializable {
     }
 
     // ============================================================
-    // CONFIGURATION DES COLONNES
+    // CONFIGURATION DES COLONNES - ETUDIANTS COURS
     // ============================================================
     private void setupEtudiantsCoursTableColumns() {
+        if (ecIdCol == null) return;
         ecIdCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         ecNomCol.setCellValueFactory(new PropertyValueFactory<>("nom"));
         ecPrenomCol.setCellValueFactory(new PropertyValueFactory<>("prenom"));
@@ -201,7 +239,11 @@ public class EnseignantController implements Initializable {
         etudiantsCoursTable.setItems(FXCollections.observableArrayList());
     }
 
+    // ============================================================
+    // CONFIGURATION DES COLONNES - NOTES ENSEIGNANT
+    // ============================================================
     private void setupNotesEnseignantTableColumns() {
+        if (neIdCol == null) return;
         neIdCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         neEtudiantCol.setCellValueFactory(new PropertyValueFactory<>("nomEtudiantComplet"));
         neMatiereCol.setCellValueFactory(new PropertyValueFactory<>("nomMatiere"));
@@ -231,13 +273,33 @@ public class EnseignantController implements Initializable {
         notesEnseignantTable.setItems(notesData);
     }
 
+    // ============================================================
+    // CONFIGURATION DES COLONNES - MESSAGES
+    // ============================================================
     private void setupMessagesTableColumns() {
+        if (ensMsgDateCol == null) return;
         ensMsgDateCol.setCellValueFactory(new PropertyValueFactory<>("dateFormatee"));
         ensMsgExpediteurCol.setCellValueFactory(new PropertyValueFactory<>("nomExpediteur"));
         ensMsgDestinataireCol.setCellValueFactory(new PropertyValueFactory<>("destinataireType"));
         ensMsgObjetCol.setCellValueFactory(new PropertyValueFactory<>("objet"));
         ensMsgContenuCol.setCellValueFactory(new PropertyValueFactory<>("contenu"));
         ensMessagesTable.setItems(messagesData);
+    }
+
+    // ============================================================
+    // CONFIGURATION TABLEAU EMPLOI DU TEMPS
+    // ============================================================
+    private void setupEnsEmploiDuTempsTableColumns() {
+        if (ensEdtJourCol == null) return;
+        ensEdtJourCol.setCellValueFactory(new PropertyValueFactory<>("jour"));
+        ensEdtHoraireCol.setCellValueFactory(new PropertyValueFactory<>("heureFormatee"));
+        ensEdtMatiereCol.setCellValueFactory(new PropertyValueFactory<>("nomMatiere"));
+        ensEdtFiliereCol.setCellValueFactory(new PropertyValueFactory<>("filiere"));
+        ensEdtAnneeCol.setCellValueFactory(new PropertyValueFactory<>("annee"));
+        ensEdtSalleCol.setCellValueFactory(new PropertyValueFactory<>("salle"));
+        ensEdtTypeCol.setCellValueFactory(new PropertyValueFactory<>("typeCours"));
+
+        ensEmploiDuTempsTable.setItems(ensEmploiDuTempsData);
     }
 
     // ============================================================
@@ -252,9 +314,11 @@ public class EnseignantController implements Initializable {
             for (Matiere m : matieres) {
                 matieresData.add(m.getNomComplet());
             }
-            matieresEnseignees.setItems(matieresData);
+            if (matieresEnseignees != null) {
+                matieresEnseignees.setItems(matieresData);
+            }
 
-            if (!matieresData.isEmpty()) {
+            if (!matieresData.isEmpty() && matieresEnseignees != null) {
                 matieresEnseignees.getSelectionModel().selectFirst();
             }
         } catch (SQLException e) {
@@ -273,7 +337,7 @@ public class EnseignantController implements Initializable {
                 }
             }
 
-            if (matiereId > 0) {
+            if (matiereId > 0 && etudiantsCoursTable != null) {
                 List<Note> notes = noteDAO.getNotesByMatiere(matiereId);
                 List<Etudiant> etudiants = new ArrayList<>();
                 for (Note n : notes) {
@@ -289,18 +353,6 @@ public class EnseignantController implements Initializable {
         }
     }
 
-    private void chargerNotesEnseignant() {
-        if (enseignantId == 0) return;
-
-        try {
-            List<Note> notes = noteDAO.getNotesByEnseignant(enseignantId);
-            notesData.clear();
-            notesData.addAll(notes);
-            notesEnseignantTable.setItems(notesData);
-        } catch (SQLException e) {
-            System.err.println("❌ Erreur chargement notes : " + e.getMessage());
-        }
-    }
 
     private void chargerMessages() {
         try {
@@ -311,15 +363,36 @@ public class EnseignantController implements Initializable {
             for (Message m : messages) {
                 String destType = m.getDestinataireType();
                 if (destType != null) {
+                    // Messages reçus par l'enseignant
                     if (destType.equals("Tous les enseignants") ||
                             destType.equals("Tous les utilisateurs") ||
                             (destType.equals("Par filière") && m.getFiliere() != null) ||
-                            destType.equals("Enseignant unique")) {
+                            destType.equals("Enseignant spécifique") ||
+                            destType.equals("Administrateur")) {
+                        messagesData.add(m);
+                    }
+                    // Messages envoyés par l'enseignant
+                    if (m.getExpediteurId() == utilisateurConnecte.getId()) {
                         messagesData.add(m);
                     }
                 }
             }
+
+            // Supprimer les doublons
+            Set<Integer> ids = new HashSet<>();
+            ObservableList<Message> uniqueMessages = FXCollections.observableArrayList();
+            for (Message m : messagesData) {
+                if (!ids.contains(m.getId())) {
+                    ids.add(m.getId());
+                    uniqueMessages.add(m);
+                }
+            }
+            messagesData.clear();
+            messagesData.addAll(uniqueMessages);
+
             ensMessagesTable.setItems(messagesData);
+            ensMessagesEnvoyesLabel.setText(String.valueOf(messagesData.size()));
+
         } catch (SQLException e) {
             System.err.println("❌ Erreur chargement messages : " + e.getMessage());
         }
@@ -327,10 +400,14 @@ public class EnseignantController implements Initializable {
 
     private void chargerComboboxFiltres() {
         // Matières
-        matiereNoteCombo.setItems(matieresData);
-        matiereNoteCombo.setValue("Toutes les matières");
-        statMatiereCombo.setItems(matieresData);
-        statMatiereCombo.setValue("Toutes les matières");
+        if (matiereNoteCombo != null) {
+            matiereNoteCombo.setItems(matieresData);
+            matiereNoteCombo.setValue("Toutes les matières");
+        }
+        if (statMatiereCombo != null) {
+            statMatiereCombo.setItems(matieresData);
+            statMatiereCombo.setValue("Toutes les matières");
+        }
 
         // Étudiants
         ObservableList<String> etudiantsNoms = FXCollections.observableArrayList();
@@ -342,14 +419,75 @@ public class EnseignantController implements Initializable {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        etudiantNoteCombo.setItems(etudiantsNoms);
-        etudiantNoteCombo.setValue("Tous les étudiants");
+        if (etudiantNoteCombo != null) {
+            etudiantNoteCombo.setItems(etudiantsNoms);
+            etudiantNoteCombo.setValue("Tous les étudiants");
+        }
 
-        // Destinataires
-        ObservableList<String> destinataires = FXCollections.observableArrayList();
-        destinataires.addAll("Administrateur", "Tous les enseignants");
-        ensDestinataireCombo.setItems(destinataires);
-        ensDestinataireCombo.setValue("Administrateur");
+        // Semestres pour l'emploi du temps
+        ObservableList<String> semestres = FXCollections.observableArrayList();
+        semestres.add("1");
+        semestres.add("2");
+        if (ensEdtSemestreCombo != null) {
+            ensEdtSemestreCombo.setItems(semestres);
+            ensEdtSemestreCombo.setValue("1");
+        }
+
+        // ============================================================
+        // COMMUNICATION - TYPES DE DESTINATAIRES
+        // ============================================================
+        ObservableList<String> typesDest = FXCollections.observableArrayList();
+        typesDest.addAll("Administrateur", "Enseignant spécifique", "Étudiant spécifique",
+                "Tous les enseignants", "Tous les étudiants", "Par filière");
+        if (ensDestinataireTypeCombo != null) {
+            ensDestinataireTypeCombo.setItems(typesDest);
+            ensDestinataireTypeCombo.setValue("Administrateur");
+        }
+
+        // Écouteur sur le type de destinataire
+        if (ensDestinataireTypeCombo != null) {
+            ensDestinataireTypeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                mettreAJourDestinataireCombo(newVal);
+            });
+        }
+
+        // Remplir les combos de noms et filières
+        remplirCombosDestinataires();
+
+        // Messages envoyés
+        ensMessagesEnvoyesLabel.setText(String.valueOf(messagesData.size()));
+    }
+
+    // ============================================================
+    // CHARGEMENT DE L'EMPLOI DU TEMPS DE L'ENSEIGNANT
+    // ============================================================
+    @FXML
+    private void handleAfficherEmploiDuTempsEnseignant() {
+        if (enseignantId == 0) {
+            afficherAlerte("Erreur", "Enseignant non identifié.");
+            return;
+        }
+
+        String semestreStr = ensEdtSemestreCombo.getValue();
+        if (semestreStr == null) {
+            afficherAlerte("Information", "Veuillez sélectionner un semestre.");
+            return;
+        }
+
+        try {
+            int semestre = Integer.parseInt(semestreStr);
+            List<EmploiDuTemps> edtList = emploiDuTempsDAO.getEmploiDuTempsByEnseignant(enseignantId, semestre);
+
+            ensEmploiDuTempsData.clear();
+            ensEmploiDuTempsData.addAll(edtList);
+
+            ensTotalCoursLabel.setText(String.valueOf(edtList.size()));
+            ensEdtStatusLabel.setText("📅 " + edtList.size() + " cours trouvés pour le semestre " + semestre);
+            statusLabel.setText("📅 Emploi du temps chargé pour le semestre " + semestre);
+
+        } catch (SQLException e) {
+            afficherAlerte("Erreur", "Impossible de charger l'emploi du temps : " + e.getMessage());
+        }
     }
 
     // ============================================================
@@ -448,6 +586,7 @@ public class EnseignantController implements Initializable {
         dialog.showAndWait().ifPresent(note -> {
             chargerNotesEnseignant();
             chargerStatistiques();
+            rechargerComboboxNotes();
             afficherAlerte("Succès", "✅ Note ajoutée !");
         });
     }
@@ -513,6 +652,7 @@ public class EnseignantController implements Initializable {
         dialog.showAndWait().ifPresent(note -> {
             chargerNotesEnseignant();
             chargerStatistiques();
+            rechargerComboboxNotes();
             afficherAlerte("Succès", "✅ Note modifiée !");
         });
     }
@@ -535,6 +675,7 @@ public class EnseignantController implements Initializable {
                 noteDAO.delete(selected.getId());
                 chargerNotesEnseignant();
                 chargerStatistiques();
+                rechargerComboboxNotes();
                 afficherAlerte("Succès", "✅ Note supprimée !");
             } catch (SQLException e) {
                 afficherAlerte("Erreur", "Impossible de supprimer : " + e.getMessage());
@@ -542,34 +683,17 @@ public class EnseignantController implements Initializable {
         }
     }
 
-    // ============================================================
-    // FILTRES NOTES
-    // ============================================================
-    @FXML
-    private void handleFiltrerNotesEnseignant() {
-        String matiere = matiereNoteCombo.getValue();
-        String etudiant = etudiantNoteCombo.getValue();
-
-        ObservableList<Note> filtered = FXCollections.observableArrayList();
-        for (Note n : notesData) {
-            boolean matchMatiere = matiere == null || matiere.equals("Toutes les matières") ||
-                    n.getNomMatiere().equals(matiere);
-            boolean matchEtudiant = etudiant == null || etudiant.equals("Tous les étudiants") ||
-                    n.getNomEtudiantComplet().equals(etudiant);
-            if (matchMatiere && matchEtudiant) {
-                filtered.add(n);
-            }
-        }
-        notesEnseignantTable.setItems(filtered);
-        notesStatusLabel.setText("📊 " + filtered.size() + " notes affichées");
-    }
-
     @FXML
     private void handleAfficherToutesNotesEnseignant() {
         notesEnseignantTable.setItems(notesData);
-        matiereNoteCombo.setValue("Toutes les matières");
-        etudiantNoteCombo.setValue("Tous les étudiants");
+        if (matiereNoteCombo != null) {
+            matiereNoteCombo.setValue("Toutes les matières");
+        }
+        if (etudiantNoteCombo != null) {
+            etudiantNoteCombo.setValue("Tous les étudiants");
+        }
         notesStatusLabel.setText("📊 " + notesData.size() + " notes affichées");
+        statusLabel.setText("📊 " + notesData.size() + " notes affichées");
     }
 
     // ============================================================
@@ -615,14 +739,12 @@ public class EnseignantController implements Initializable {
             ensNbEtudiants.setText(String.valueOf(nbEtudiants));
             ensNbNotes.setText(String.valueOf(notes.size()));
 
-            // Liste des étudiants
             ObservableList<String> listeEtudiants = FXCollections.observableArrayList();
             for (Note n : notes) {
                 listeEtudiants.add(n.getNomEtudiantComplet() + " : " + String.format("%.1f", n.getValeur()) + "/20");
             }
             ensStatListeEtudiants.setItems(listeEtudiants);
 
-            // Graphique
             afficherGraphiqueStatistiques(notes, matiereNom);
 
         } catch (SQLException e) {
@@ -672,12 +794,20 @@ public class EnseignantController implements Initializable {
     // ============================================================
     @FXML
     private void handleEnseignantEnvoyerMessage() {
-        String destinataire = ensDestinataireCombo.getValue();
+        String type = ensDestinataireTypeCombo.getValue();
         String objet = ensMessageObjetField.getText();
         String contenu = ensMessageContentArea.getText();
 
-        if (destinataire == null || objet.isEmpty() || contenu.isEmpty()) {
+        if (type == null || objet.isEmpty() || contenu.isEmpty()) {
             afficherAlerte("Erreur", "Veuillez remplir tous les champs.");
+            return;
+        }
+
+        // Construire le destinataire
+        String destinataire = construireDestinataire(type);
+
+        if (destinataire == null || destinataire.isEmpty()) {
+            afficherAlerte("Erreur", "Aucun destinataire sélectionné.");
             return;
         }
 
@@ -689,16 +819,63 @@ public class EnseignantController implements Initializable {
                     objet,
                     contenu
             );
+
+            // Ajouter des informations supplémentaires selon le type
+            if (type.equals("Par filière") && ensDestinataireFiliereCombo.getValue() != null) {
+                message.setFiliere(ensDestinataireFiliereCombo.getValue());
+            }
+
             messageDAO.create(message);
             messagesData.add(0, message);
+            ensMessagesEnvoyesLabel.setText(String.valueOf(messagesData.size()));
 
-            afficherAlerte("Succès", "✅ Message envoyé avec succès !");
+            afficherAlerte("Succès", "✅ Message envoyé avec succès !\n\n" +
+                    "📋 Destinataire : " + destinataire + "\n" +
+                    "📝 Objet : " + objet);
+
             ensMessageObjetField.clear();
             ensMessageContentArea.clear();
+            statusLabel.setText("✉️ Message envoyé à " + destinataire);
 
         } catch (SQLException e) {
             afficherAlerte("Erreur", "Impossible d'envoyer : " + e.getMessage());
         }
+    }
+
+    private String construireDestinataire(String type) {
+        switch (type) {
+            case "Administrateur":
+                return "Administrateur";
+
+            case "Enseignant spécifique":
+                String enseignant = ensDestinataireNomCombo.getValue();
+                return enseignant != null ? "Enseignant : " + enseignant : null;
+
+            case "Étudiant spécifique":
+                String etudiant = ensDestinataireNomCombo.getValue();
+                return etudiant != null ? "Étudiant : " + etudiant : null;
+
+            case "Tous les enseignants":
+                return "Tous les enseignants";
+
+            case "Tous les étudiants":
+                return "Tous les étudiants";
+
+            case "Par filière":
+                String filiere = ensDestinataireFiliereCombo.getValue();
+                return filiere != null ? "Filière : " + filiere : null;
+
+            default:
+                return null;
+        }
+    }
+
+    @FXML
+    private void handleEnseignantEffacerMessage() {
+        ensMessageObjetField.clear();
+        ensMessageContentArea.clear();
+        ensDestinataireAffiche.setText("Aucun destinataire sélectionné");
+        statusLabel.setText("✉️ Message effacé");
     }
 
     // ============================================================
@@ -745,7 +922,9 @@ public class EnseignantController implements Initializable {
         chargerMatieresEnseignees();
         chargerNotesEnseignant();
         chargerMessages();
+        rechargerComboboxNotes();
         afficherAlerte("Info", "🔄 Données rafraîchies !");
+        statusLabel.setText("🔄 Données rafraîchies");
     }
 
     @FXML
@@ -772,5 +951,199 @@ public class EnseignantController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(contenu);
         alert.showAndWait();
+    }
+
+    // ============================================================
+// RECHARGER LES COMBOBOX DES NOTES - CORRIGÉ
+// ============================================================
+    private void rechargerComboboxNotes() {
+        if (matiereNoteCombo == null) return;
+
+        // 1. Matières
+        ObservableList<String> matieresList = FXCollections.observableArrayList();
+        matieresList.add("Toutes les matières");
+
+        for (Note n : notesData) {
+            String nomMatiere = n.getNomMatiere();
+            if (nomMatiere != null && !matieresList.contains(nomMatiere)) {
+                matieresList.add(nomMatiere);
+            }
+        }
+        matiereNoteCombo.setItems(matieresList);
+        matiereNoteCombo.setValue("Toutes les matières");
+
+        // 2. Étudiants
+        ObservableList<String> etudiantsList = FXCollections.observableArrayList();
+        etudiantsList.add("Tous les étudiants");
+
+        for (Note n : notesData) {
+            String nomEtudiant = n.getNomEtudiantComplet();
+            if (nomEtudiant != null && !etudiantsList.contains(nomEtudiant)) {
+                etudiantsList.add(nomEtudiant);
+            }
+        }
+        etudiantNoteCombo.setItems(etudiantsList);
+        etudiantNoteCombo.setValue("Tous les étudiants");
+
+        System.out.println("📊 ComboBox rechargées : " + matieresList.size() + " matières, " + etudiantsList.size() + " étudiants");
+    }
+
+    // ============================================================
+// FILTRES NOTES - CORRIGÉ
+// ============================================================
+    @FXML
+    private void handleFiltrerNotesEnseignant() {
+        String matiere = matiereNoteCombo.getValue();
+        String etudiant = etudiantNoteCombo.getValue();
+
+        System.out.println("🔍 FILTRE - Matière: " + matiere + ", Étudiant: " + etudiant);
+        System.out.println("🔍 FILTRE - Notes disponibles: " + notesData.size());
+
+        boolean toutesMatieres = matiere == null || matiere.equals("Toutes les matières");
+        boolean tousEtudiants = etudiant == null || etudiant.equals("Tous les étudiants");
+
+        ObservableList<Note> filtered = FXCollections.observableArrayList();
+        for (Note n : notesData) {
+            boolean matchMatiere = toutesMatieres ||
+                    (n.getNomMatiere() != null && n.getNomMatiere().equals(matiere));
+            boolean matchEtudiant = tousEtudiants ||
+                    (n.getNomEtudiantComplet() != null && n.getNomEtudiantComplet().equals(etudiant));
+
+            if (matchMatiere && matchEtudiant) {
+                filtered.add(n);
+            }
+        }
+
+        notesEnseignantTable.setItems(filtered);
+        notesStatusLabel.setText("📊 " + filtered.size() + " notes affichées sur " + notesData.size());
+        statusLabel.setText("📊 " + filtered.size() + " notes affichées");
+
+        System.out.println("🔍 FILTRE - Résultat: " + filtered.size() + " notes");
+    }
+
+    // ============================================================
+// NOTES ENSEIGNANT - AVEC DÉBOGAGE
+// ============================================================
+    private void chargerNotesEnseignant() {
+        if (enseignantId == 0) return;
+
+        try {
+            List<Note> notes = noteDAO.getNotesByEnseignant(enseignantId);
+            notesData.clear();
+            notesData.addAll(notes);
+            notesEnseignantTable.setItems(notesData);
+
+            // ✅ DÉBOGAGE
+            System.out.println("📝 Notes chargées : " + notesData.size());
+            for (Note n : notesData) {
+                System.out.println("   - " + n.getNomMatiere() + " | " + n.getNomEtudiantComplet());
+            }
+
+            // ✅ Recharger les ComboBox après chargement
+            rechargerComboboxNotes();
+
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur chargement notes : " + e.getMessage());
+        }
+    }
+
+    // ============================================================
+// GESTION DES DESTINATAIRES
+// ============================================================
+
+    private void remplirCombosDestinataires() {
+        // Enseignants
+        ObservableList<String> enseignantsList = FXCollections.observableArrayList();
+        try {
+            for (Enseignant e : enseignantDAO.readAll()) {
+                if (e.getId() != enseignantId) { // Ne pas inclure l'enseignant lui-même
+                    enseignantsList.add(e.getNomComplet());
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        ensDestinataireNomCombo.setItems(enseignantsList);
+
+        // Filières
+        ObservableList<String> filieresList = FXCollections.observableArrayList();
+        try {
+            for (Etudiant e : etudiantDAO.readAll()) {
+                if (e.getFiliere() != null && !filieresList.contains(e.getFiliere())) {
+                    filieresList.add(e.getFiliere());
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        ensDestinataireFiliereCombo.setItems(filieresList);
+    }
+
+    private void mettreAJourDestinataireCombo(String type) {
+        if (type == null) return;
+
+        // Cacher tous les combos
+        ensDestinataireNomCombo.setVisible(false);
+        ensDestinataireFiliereCombo.setVisible(false);
+
+        switch (type) {
+            case "Enseignant spécifique":
+                ensDestinataireNomCombo.setVisible(true);
+                remplirCombosDestinataires();
+                ensDestinataireAffiche.setText("👤 Sélectionnez un enseignant");
+                break;
+
+            case "Étudiant spécifique":
+                ensDestinataireNomCombo.setVisible(true);
+                // Remplir avec les étudiants
+                ObservableList<String> etudiantsList = FXCollections.observableArrayList();
+                try {
+                    for (Etudiant e : etudiantDAO.readAll()) {
+                        etudiantsList.add(e.getNomComplet());
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                ensDestinataireNomCombo.setItems(etudiantsList);
+                ensDestinataireAffiche.setText("👤 Sélectionnez un étudiant");
+                break;
+
+            case "Administrateur":
+                ensDestinataireAffiche.setText("👑 Administrateur");
+                break;
+
+            case "Tous les enseignants":
+                ensDestinataireAffiche.setText("👨‍🏫 Tous les enseignants");
+                break;
+
+            case "Tous les étudiants":
+                ensDestinataireAffiche.setText("👨‍🎓 Tous les étudiants");
+                break;
+
+            case "Par filière":
+                ensDestinataireFiliereCombo.setVisible(true);
+                ensDestinataireAffiche.setText("📚 Sélectionnez une filière");
+                break;
+
+            default:
+                ensDestinataireAffiche.setText("Aucun destinataire sélectionné");
+        }
+
+        // Mettre à jour l'affichage du destinataire sélectionné
+        if (ensDestinataireNomCombo.isVisible()) {
+            ensDestinataireNomCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    ensDestinataireAffiche.setText("👤 " + newVal);
+                }
+            });
+        }
+
+        if (ensDestinataireFiliereCombo.isVisible()) {
+            ensDestinataireFiliereCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    ensDestinataireAffiche.setText("📚 Filière : " + newVal);
+                }
+            });
+        }
     }
 }

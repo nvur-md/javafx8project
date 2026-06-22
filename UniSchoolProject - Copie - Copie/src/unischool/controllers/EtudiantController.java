@@ -13,6 +13,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import java.util.HashSet;
+import java.util.Set;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -72,6 +74,27 @@ public class EtudiantController implements Initializable {
     private ObservableList<Note> notesData = FXCollections.observableArrayList();
 
     // ============================================================
+// COMPOSANTS FXML - ONGLET COMMUNICATION
+// ============================================================
+    @FXML private ComboBox<String> etudiantDestinataireCombo;
+    @FXML private TextField etudiantMessageObjetField;
+    @FXML private TextArea etudiantMessageContentArea;
+    @FXML private Label etudiantDestinataireAffiche;
+    @FXML private Label etudiantMessagesEnvoyesLabel;
+    @FXML private TableView<Message> etudiantMessagesTable;
+    @FXML private TableColumn<Message, String> etudiantMsgDateCol;
+    @FXML private TableColumn<Message, String> etudiantMsgExpediteurCol;
+    @FXML private TableColumn<Message, String> etudiantMsgDestinataireCol;
+    @FXML private TableColumn<Message, String> etudiantMsgObjetCol;
+    @FXML private TableColumn<Message, String> etudiantMsgContenuCol;
+
+    // ============================================================
+// DAO
+// ============================================================
+    private MessageDAO messageDAO;
+    private EnseignantDAO enseignantDAO;
+
+    // ============================================================
     // SETTER POUR L'UTILISATEUR
     // ============================================================
     public void setUtilisateur(Utilisateur utilisateur) {
@@ -84,6 +107,7 @@ public class EtudiantController implements Initializable {
         chargerDonneesEtudiant();
         chargerNotes();
         chargerAbsences();
+        chargerMessagesEtudiant();
 
         System.out.println("✅ Étudiant connecté : " + utilisateur.getNomComplet());
     }
@@ -97,9 +121,14 @@ public class EtudiantController implements Initializable {
         etudiantDAO = new EtudiantDAO();
         noteDAO = new NoteDAO();
         absenceDAO = new AbsenceDAO();
+        messageDAO = new MessageDAO();
+        enseignantDAO = new EnseignantDAO();
 
         // Configurer les colonnes
         setupNotesTableColumns();
+        setupEtudiantMessagesTableColumns();
+
+        setupEtudiantCommunication();
 
         System.out.println("✅ Interface Étudiant initialisée");
     }
@@ -253,5 +282,181 @@ public class EtudiantController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(contenu);
         alert.showAndWait();
+    }
+
+    // ============================================================
+// CONFIGURATION COMMUNICATION
+// ============================================================
+
+    private void setupEtudiantMessagesTableColumns() {
+        if (etudiantMsgDateCol == null) return;
+        etudiantMsgDateCol.setCellValueFactory(new PropertyValueFactory<>("dateFormatee"));
+        etudiantMsgExpediteurCol.setCellValueFactory(new PropertyValueFactory<>("nomExpediteur"));
+        etudiantMsgDestinataireCol.setCellValueFactory(new PropertyValueFactory<>("destinataireType"));
+        etudiantMsgObjetCol.setCellValueFactory(new PropertyValueFactory<>("objet"));
+        etudiantMsgContenuCol.setCellValueFactory(new PropertyValueFactory<>("contenu"));
+        etudiantMessagesTable.setItems(messagesData);
+    }
+
+// ============================================================
+// CHARGEMENT DES MESSAGES
+// ============================================================
+
+    private ObservableList<Message> messagesData = FXCollections.observableArrayList();
+
+    private void chargerMessagesEtudiant() {
+        try {
+            List<Message> messages = messageDAO.getAllMessages();
+            messagesData.clear();
+
+            Etudiant etudiant = etudiantDAO.read(etudiantId);
+            String nomEtudiant = etudiant.getNomComplet();
+            String filiereEtudiant = etudiant.getFiliere();
+
+            System.out.println("📧 Chargement des messages pour : " + nomEtudiant);
+            System.out.println("📧 Filière : " + filiereEtudiant);
+
+            for (Message m : messages) {
+                String destType = m.getDestinataireType();
+                boolean estPourMoi = false;
+
+                // 1. Messages envoyés par l'étudiant
+                if (m.getExpediteurId() == utilisateurConnecte.getId()) {
+                    estPourMoi = true;
+                }
+                // 2. Messages envoyés à tous les étudiants
+                else if ("Tous les étudiants".equals(destType) || "Tous les utilisateurs".equals(destType)) {
+                    estPourMoi = true;
+                }
+                // 3. Messages envoyés spécifiquement à un étudiant
+                else if ("Étudiant spécifique".equals(destType)) {
+                    // Vérifier si le destinataire contient le nom de l'étudiant
+                    String destinataire = m.getDestinataireType();
+                    if (destinataire != null && destinataire.contains(nomEtudiant)) {
+                        estPourMoi = true;
+                    }
+                }
+                // 4. Messages envoyés par filière
+                else if ("Par filière".equals(destType) && m.getFiliere() != null &&
+                        m.getFiliere().equals(filiereEtudiant)) {
+                    estPourMoi = true;
+                }
+                // 5. Messages envoyés par année
+                else if ("Par année".equals(destType) && m.getAnnee() != null &&
+                        m.getAnnee() == etudiant.getAnneeEtude()) {
+                    estPourMoi = true;
+                }
+
+                if (estPourMoi) {
+                    messagesData.add(m);
+                }
+            }
+
+            // Trier par date décroissante
+            messagesData.sort((m1, m2) -> m2.getDateEnvoi().compareTo(m1.getDateEnvoi()));
+
+            etudiantMessagesTable.setItems(messagesData);
+            etudiantMessagesEnvoyesLabel.setText(String.valueOf(messagesData.size()));
+
+            System.out.println("📧 " + messagesData.size() + " messages affichés pour " + nomEtudiant);
+
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur chargement messages : " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+// ============================================================
+// ENVOI DE MESSAGES
+// ============================================================
+
+    @FXML
+    private void handleEtudiantEnvoyerMessage() {
+        String destinataire = etudiantDestinataireCombo.getValue();
+        String objet = etudiantMessageObjetField.getText();
+        String contenu = etudiantMessageContentArea.getText();
+
+        if (destinataire == null || objet.isEmpty() || contenu.isEmpty()) {
+            afficherAlerte("Erreur", "Veuillez remplir tous les champs.");
+            return;
+        }
+
+        // Nettoyer le nom du destinataire (enlever les icônes)
+        String destinataireClean = destinataire
+                .replace("👑 ", "")
+                .replace("👨‍🏫 ", "")
+                .replace(" (", " - ")
+                .replace(")", "");
+
+        try {
+            Message message = new Message(
+                    utilisateurConnecte.getId(),
+                    "ETUDIANT",
+                    destinataireClean,
+                    objet,
+                    contenu
+            );
+
+            messageDAO.create(message);
+            messagesData.add(0, message);
+            etudiantMessagesEnvoyesLabel.setText(String.valueOf(messagesData.size()));
+
+            afficherAlerte("Succès", "✅ Message envoyé avec succès !\n\n" +
+                    "📋 Destinataire : " + destinataireClean + "\n" +
+                    "📝 Objet : " + objet);
+
+            etudiantMessageObjetField.clear();
+            etudiantMessageContentArea.clear();
+            etudiantDestinataireAffiche.setText("📋 Destinataire : " + destinataireClean);
+            statusLabel.setText("✉️ Message envoyé à " + destinataireClean);
+
+        } catch (SQLException e) {
+            afficherAlerte("Erreur", "Impossible d'envoyer : " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleEtudiantEffacerMessage() {
+        etudiantMessageObjetField.clear();
+        etudiantMessageContentArea.clear();
+        etudiantDestinataireAffiche.setText("Aucun destinataire sélectionné");
+        statusLabel.setText("✉️ Message effacé");
+    }
+
+    private void setupEtudiantCommunication() {
+        if (etudiantDestinataireCombo == null) return;
+
+        ObservableList<String> destinataires = FXCollections.observableArrayList();
+        destinataires.add("👑 Administrateur");
+
+        // Charger les enseignants depuis la base de données
+        try {
+            // Récupérer tous les enseignants
+            List<Enseignant> enseignants = enseignantDAO.readAll();
+            for (Enseignant e : enseignants) {
+                // Ne pas inclure l'enseignant connecté (si c'est le cas)
+                String nomEnseignant = "👨‍🏫 " + e.getNomComplet() + " (" + e.getSpecialite() + ")";
+                if (!destinataires.contains(nomEnseignant)) {
+                    destinataires.add(nomEnseignant);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur chargement enseignants : " + e.getMessage());
+        }
+
+        // Ajouter l'option "Tous les enseignants" s'il y a des enseignants
+        if (destinataires.size() > 1) {
+            destinataires.add("👨‍🏫 Tous les enseignants");
+        }
+
+        etudiantDestinataireCombo.setItems(destinataires);
+        etudiantDestinataireCombo.setValue("👑 Administrateur");
+
+        // Écouteur pour afficher le destinataire sélectionné
+        etudiantDestinataireCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && etudiantDestinataireAffiche != null) {
+                etudiantDestinataireAffiche.setText("📋 Destinataire : " + newVal);
+            }
+        });
     }
 }

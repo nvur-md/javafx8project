@@ -28,36 +28,43 @@
     <center>
         <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 10;">
 
-            <!-- ONGLET 1 : MES COURS -->
-            <Tab text="📚 Mes Cours" closable="false">
+            <!-- ============================================================
+                 ONGLET 1 : EMPLOI DU TEMPS (EX-MES COURS)
+                 ============================================================ -->
+            <Tab text="📅 Emploi du temps" closable="false">
                 <VBox spacing="15" style="-fx-padding: 20;">
-                    <Label text="📚 Mes Cours" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <Label text="📅 Mon Emploi du Temps" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
 
-                    <HBox spacing="15">
-                        <VBox spacing="10" prefWidth="300">
-                            <Label text="📋 Mes matières" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                            <ListView fx:id="matieresEnseignees" prefHeight="300"/>
-                        </VBox>
-
-                        <VBox spacing="10" HBox.hgrow="ALWAYS">
-                            <Label text="👥 Étudiants" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                            <TableView fx:id="etudiantsCoursTable" prefHeight="300">
-                                <columns>
-                                    <TableColumn fx:id="ecIdCol" text="ID" prefWidth="50"/>
-                                    <TableColumn fx:id="ecNomCol" text="Nom" prefWidth="130"/>
-                                    <TableColumn fx:id="ecPrenomCol" text="Prénom" prefWidth="130"/>
-                                    <TableColumn fx:id="ecEmailCol" text="Email" prefWidth="180"/>
-                                    <TableColumn fx:id="ecNoteCol" text="Note" prefWidth="80"/>
-                                </columns>
-                            </TableView>
-                        </VBox>
+                    <!-- Filtres -->
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Label text="📋 Semestre :" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                        <ComboBox fx:id="ensEdtSemestreCombo" prefWidth="150" promptText="Semestre"/>
+                        <Button text="📊 Afficher" onAction="#handleAfficherEmploiDuTempsEnseignant" styleClass="button-primary"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="📋 Total cours : " style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
+                        <Label fx:id="ensTotalCoursLabel" text="0" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #3498db;"/>
                     </HBox>
 
-                    <Label fx:id="coursDetailsLabel" text="💡 Sélectionnez une matière pour voir les étudiants" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-padding: 5px;"/>
+                    <!-- Tableau Emploi du temps -->
+                    <TableView fx:id="ensEmploiDuTempsTable" prefHeight="400">
+                        <columns>
+                            <TableColumn fx:id="ensEdtJourCol" text="Jour" prefWidth="100"/>
+                            <TableColumn fx:id="ensEdtHoraireCol" text="Horaire" prefWidth="120"/>
+                            <TableColumn fx:id="ensEdtMatiereCol" text="Matière" prefWidth="200"/>
+                            <TableColumn fx:id="ensEdtFiliereCol" text="Filière" prefWidth="150"/>
+                            <TableColumn fx:id="ensEdtAnneeCol" text="Année" prefWidth="80"/>
+                            <TableColumn fx:id="ensEdtSalleCol" text="Salle" prefWidth="100"/>
+                            <TableColumn fx:id="ensEdtTypeCol" text="Type" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+
+                    <Label fx:id="ensEdtStatusLabel" text="💡 Sélectionnez un semestre pour voir votre emploi du temps" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-padding: 5px;"/>
                 </VBox>
             </Tab>
 
-            <!-- ONGLET 2 : GESTION DES NOTES -->
+            <!-- ============================================================
+                 ONGLET 2 : GESTION DES NOTES
+                 ============================================================ -->
             <Tab text="📝 Gestion des Notes" closable="false">
                 <VBox spacing="15" style="-fx-padding: 20;">
                     <Label text="📝 Gestion des Notes" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
@@ -96,7 +103,9 @@
                 </VBox>
             </Tab>
 
-            <!-- ONGLET 3 : STATISTIQUES -->
+            <!-- ============================================================
+                 ONGLET 3 : STATISTIQUES
+                 ============================================================ -->
             <Tab text="📊 Statistiques" closable="false">
                 <VBox spacing="15" style="-fx-padding: 20;">
                     <Label text="📊 Mes Statistiques" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
@@ -136,14 +145,18 @@
                 </VBox>
             </Tab>
 
-            <!-- ONGLET 4 : COMMUNICATION -->
+            <!-- ============================================================
+     ONGLET 4 : COMMUNICATION
+     ============================================================ -->
             <Tab text="✉️ Communication" closable="false">
                 <VBox spacing="15" style="-fx-padding: 20;">
                     <Label text="✉️ Communication" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
 
-                    <HBox spacing="15">
-                        <Label text="📋 Destinataire :" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
-                        <ComboBox fx:id="ensDestinataireCombo" prefWidth="200" promptText="Sélectionner un destinataire"/>
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Label text="📋 Type de destinataire :" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                        <ComboBox fx:id="ensDestinataireTypeCombo" prefWidth="200" promptText="Sélectionner un type"/>
+                        <ComboBox fx:id="ensDestinataireNomCombo" prefWidth="250" promptText="Sélectionner un destinataire" visible="false"/>
+                        <ComboBox fx:id="ensDestinataireFiliereCombo" prefWidth="200" promptText="Filière..." visible="false"/>
                     </HBox>
 
                     <Label text="📝 Objet :" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
@@ -152,7 +165,15 @@
                     <Label text="📝 Message :" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
                     <TextArea fx:id="ensMessageContentArea" promptText="Saisissez votre message ici..." prefHeight="120"/>
 
-                    <Button text="📤 Envoyer" onAction="#handleEnseignantEnvoyerMessage" styleClass="button-primary"/>
+                    <Label fx:id="ensDestinataireAffiche" text="Aucun destinataire sélectionné" style="-fx-text-fill: #7f8c8d; -fx-font-style: italic;"/>
+
+                    <HBox spacing="10">
+                        <Button text="📤 Envoyer" onAction="#handleEnseignantEnvoyerMessage" styleClass="button-primary"/>
+                        <Button text="🗑️ Effacer" onAction="#handleEnseignantEffacerMessage" styleClass="button-secondary"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="✉️ Messages envoyés : " style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
+                        <Label fx:id="ensMessagesEnvoyesLabel" text="0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3498db;"/>
+                    </HBox>
 
                     <Separator/>
 
